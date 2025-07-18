@@ -167,7 +167,7 @@ const MasjidsPage: React.FC = () => {
               
               <div className="flex items-start space-x-2 text-gray-600 dark:text-gray-300 mb-4">
                 <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                <span className="text-sm">{(masjid as MasjidWithArea).areaName || masjid.address}</span>
+                <span className="text-sm">{masjid.address}</span>
               </div>
 
               {/* Driving Distance */}

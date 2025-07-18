@@ -47,7 +47,12 @@ const RegisterMasjidPage: React.FC = () => {
           toast.success('Location detected successfully');
           // Convert lat/lng to area/city
           const { area, city } = await reverseGeocode(position.coords.latitude, position.coords.longitude);
-          setDetectedArea(area);
+          // Filter out unwanted area names like 'Ward'
+          let filteredArea = area;
+          if (filteredArea && filteredArea.toLowerCase().startsWith('ward')) {
+            filteredArea = '';
+          }
+          setDetectedArea(filteredArea);
           setDetectedCity(city);
         },
         (error) => {
@@ -81,7 +86,7 @@ const RegisterMasjidPage: React.FC = () => {
       // Save masjid data to Firestore (no photo)
       await setDoc(doc(db, 'masjids', userCredential.user.uid), {
         name: formData.masjidName,
-        address: formData.location,
+        address: detectedArea && detectedCity ? `${detectedArea}, ${detectedCity}` : detectedCity || detectedArea || formData.location,
         coordinates: formData.coordinates,
         phone: formData.mobileNumber,
         email: formData.email,
@@ -205,7 +210,7 @@ const RegisterMasjidPage: React.FC = () => {
                   <div className="mt-2 text-sm text-gray-700 dark:text-gray-300">
                     <div>Latitude: {formData.coordinates.lat.toFixed(6)}</div>
                     <div>Longitude: {formData.coordinates.lng.toFixed(6)}</div>
-                    {detectedArea && <div>Area: {detectedArea}</div>}
+                    <div>Area: {detectedArea ? detectedArea : 'Not available'}</div>
                     {detectedCity && <div>City: {detectedCity}</div>}
                   </div>
                 )}

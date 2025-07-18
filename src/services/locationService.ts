@@ -82,6 +82,7 @@ export async function reverseGeocode(lat: number, lon: number): Promise<{ area: 
         data.address.village ||
         data.address.town ||
         data.address.county ||
+        data.address.road ||
         '';
       const city =
         data.address.city ||
