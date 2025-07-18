@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#28A745" />
+    <meta name="description" content="Find nearby masjids, accurate prayer times, Qiblah direction, and daily Islamic content. Your comprehensive Islamic companion app." />
+    <meta name="keywords" content="islamic, masjid, prayer times, qiblah, hadith, muslim, islam, mosque finder" />
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="Islamic Finder - Masjid & Prayer Times" />
+    <meta property="og:description" content="Find nearby masjids, accurate prayer times, Qiblah direction, and daily Islamic content" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://islamic-finder.web.app" />
+    <meta property="og:image" content="/og-image.png" />
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Islamic Finder - Masjid & Prayer Times" />
+    <meta name="twitter:description" content="Find nearby masjids, accurate prayer times, Qiblah direction, and daily Islamic content" />
+    <meta name="twitter:image" content="/twitter-image.png" />
+    
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Islamic Finder" />
+    <link rel="apple-touch-icon" href="/icon-192x192.png" />
+    
+    <!-- Preconnect to external APIs -->
+    <link rel="preconnect" href="https://api.aladhan.com" />
+    <link rel="preconnect" href="https://api.hadithapi.com" />
+    <link rel="preconnect" href="https://images.pexels.com" />
+    
+    <title>Islamic Finder - Masjid & Prayer Times</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    
+    <!-- Service Worker Registration -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then((registration) => {
+              console.log('SW registered: ', registration);
+            })
+            .catch((registrationError) => {
+              console.log('SW registration failed: ', registrationError);
+            });
+        });
+      }
+    </script>
+  </body>
+</html>

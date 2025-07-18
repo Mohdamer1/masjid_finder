@@ -1,0 +1,41 @@
+{
+  "name": "Islamic Finder - Masjid & Prayer Times",
+  "short_name": "Islamic Finder",
+  "description": "Find nearby masjids, prayer times, Qiblah direction, and daily Islamic content",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#28A745",
+  "background_color": "#FAFAFA",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en-US",
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["lifestyle", "religion", "utilities"],
+  "screenshots": [
+    {
+      "src": "/screenshot-mobile.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "/screenshot-desktop.png",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "form_factor": "wide"
+    }
+  ]
+}
