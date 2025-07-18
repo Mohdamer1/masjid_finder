@@ -66,3 +66,19 @@ export async function getDrivingDistance(
     return null;
   }
 }
+
+export async function reverseGeocode(lat: number, lon: number): Promise<string | null> {
+  const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`;
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+    if (data && data.address) {
+      const area = data.address.suburb || data.address.neighbourhood || '';
+      const city = data.address.city || data.address.town || data.address.village || '';
+      return [area, city].filter(Boolean).join(', ');
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}

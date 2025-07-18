@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../store/store';
-import { getCurrentLocation, calculateDistance, getDrivingDistance } from '../services/locationService';
+import { getCurrentLocation, calculateDistance, getDrivingDistance, reverseGeocode } from '../services/locationService';
 import { setMasjids, setLoading, setError } from '../store/slices/masjidSlice';
 import { setUserLocation } from '../store/slices/prayerSlice';
 import { Masjid } from '../types';
@@ -10,6 +10,9 @@ import { MapPin, Phone, Star, Navigation, Clock, Users } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase/config';
+
+// Extend Masjid type locally to include areaName
+type MasjidWithArea = Masjid & { areaName: string };
 
 const MasjidsPage: React.FC = () => {
   const dispatch = useDispatch();
@@ -31,10 +34,11 @@ const MasjidsPage: React.FC = () => {
       // Fetch masjids from Firestore
       const querySnapshot = await getDocs(collection(db, 'masjids'));
       const masjidsFromDb = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      // Calculate driving distances and sort by proximity
-      const masjidsWithDistance = await Promise.all(
+      // Calculate driving distances and get area/city for each masjid
+      const masjidsWithDistance: MasjidWithArea[] = await Promise.all(
         masjidsFromDb.map(async (masjid: any) => {
           let distance = null;
+          let areaName: string = '';
           if (masjid.coordinates) {
             distance = await getDrivingDistance(
               location.lat,
@@ -42,8 +46,12 @@ const MasjidsPage: React.FC = () => {
               masjid.coordinates.lat,
               masjid.coordinates.lng
             );
+            areaName = (await reverseGeocode(
+              masjid.coordinates.lat,
+              masjid.coordinates.lng
+            )) || '';
           }
-          return { ...masjid, distance };
+          return { ...masjid, distance, areaName };
         })
       );
       masjidsWithDistance.sort((a, b) => (a.distance || Infinity) - (b.distance || Infinity));
@@ -140,7 +148,7 @@ const MasjidsPage: React.FC = () => {
               
               <div className="flex items-start space-x-2 text-gray-600 dark:text-gray-300 mb-4">
                 <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                <span className="text-sm">{masjid.address}</span>
+                <span className="text-sm">{(masjid as MasjidWithArea).areaName || masjid.address}</span>
               </div>
 
               {/* Driving Distance */}
