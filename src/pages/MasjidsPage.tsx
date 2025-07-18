@@ -20,6 +20,7 @@ const MasjidsPage: React.FC = () => {
   const { userLocation } = useSelector((state: RootState) => state.prayer);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedFacilities, setSelectedFacilities] = useState<string[]>([]);
+  const [locationError, setLocationError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchMasjids();
@@ -29,8 +30,16 @@ const MasjidsPage: React.FC = () => {
     try {
       dispatch(setLoading(true));
       // Get user location
-      const location = await getCurrentLocation();
-      dispatch(setUserLocation(location));
+      let location;
+      try {
+        location = await getCurrentLocation();
+        dispatch(setUserLocation(location));
+        setLocationError(null);
+      } catch (err: any) {
+        setLocationError('Please enable your location to find nearby masjids.');
+        dispatch(setLoading(false));
+        return;
+      }
       // Fetch masjids from Firestore
       const querySnapshot = await getDocs(collection(db, 'masjids'));
       const masjidsFromDb = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -88,6 +97,16 @@ const MasjidsPage: React.FC = () => {
         <div className="flex items-center justify-center py-24">
           <LoadingSpinner size="lg" />
           <span className="ml-3 text-gray-600 dark:text-gray-300">Finding nearby masjids...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (locationError) {
+    return (
+      <div className="max-w-7xl mx-auto py-12 px-4">
+        <div className="flex items-center justify-center py-24">
+          <span className="text-red-600 text-lg font-semibold">{locationError}</span>
         </div>
       </div>
     );

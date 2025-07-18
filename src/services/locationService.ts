@@ -73,7 +73,11 @@ export async function reverseGeocode(lat: number, lon: number): Promise<string |
     const res = await fetch(url);
     const data = await res.json();
     if (data && data.address) {
-      const area = data.address.suburb || data.address.neighbourhood || '';
+      // Filter out unwanted area names like 'Ward'
+      let area = data.address.suburb || data.address.neighbourhood || '';
+      if (area && area.toLowerCase().startsWith('ward')) {
+        area = '';
+      }
       const city = data.address.city || data.address.town || data.address.village || '';
       return [area, city].filter(Boolean).join(', ');
     }

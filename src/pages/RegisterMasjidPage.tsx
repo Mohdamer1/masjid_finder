@@ -6,6 +6,8 @@ import { useNavigate } from 'react-router-dom';
 import { auth, db, storage } from '../firebase/config';
 import { MapPin, Phone, Mail, Lock, Upload, Camera, ArrowRight } from 'lucide-react';
 import toast from 'react-hot-toast';
+import 'leaflet/dist/leaflet.css';
+import MapPicker from '../components/Common/MapPicker';
 
 const RegisterMasjidPage: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -16,8 +18,6 @@ const RegisterMasjidPage: React.FC = () => {
     email: '',
     password: ''
   });
-  const [photo, setPhoto] = useState<File | null>(null);
-  const [photoPreview, setPhotoPreview] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   
@@ -28,18 +28,6 @@ const RegisterMasjidPage: React.FC = () => {
       ...formData,
       [e.target.name]: e.target.value
     });
-  };
-
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setPhoto(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPhotoPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
   };
 
   const getCurrentLocation = () => {
@@ -69,6 +57,13 @@ const RegisterMasjidPage: React.FC = () => {
     e.preventDefault();
     setLoading(true);
 
+    // Ensure location is selected
+    if (!formData.coordinates.lat || !formData.coordinates.lng) {
+      toast.error('Please select your masjid location before creating an account.');
+      setLoading(false);
+      return;
+    }
+
     try {
       // Create user account
       const userCredential = await createUserWithEmailAndPassword(
@@ -77,23 +72,14 @@ const RegisterMasjidPage: React.FC = () => {
         formData.password
       );
 
-      let photoURL = '';
-      
-      // Upload photo if provided
-      if (photo) {
-        const photoRef = ref(storage, `masjid-images/${userCredential.user.uid}/${photo.name}`);
-        const snapshot = await uploadBytes(photoRef, photo);
-        photoURL = await getDownloadURL(snapshot.ref);
-      }
-
-      // Save masjid data to Firestore
+      // Save masjid data to Firestore (no photo)
       await setDoc(doc(db, 'masjids', userCredential.user.uid), {
         name: formData.masjidName,
         address: formData.location,
         coordinates: formData.coordinates,
         phone: formData.mobileNumber,
         email: formData.email,
-        image: photoURL || 'https://images.pexels.com/photos/3250364/pexels-photo-3250364.jpeg',
+        image: 'https://images.pexels.com/photos/3250364/pexels-photo-3250364.jpeg',
         verified: false,
         isApproved: false,
         admin: userCredential.user.uid,
@@ -196,33 +182,28 @@ const RegisterMasjidPage: React.FC = () => {
               />
             </div>
 
-            {/* Location */}
+            {/* Location Picker */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Masjid Location *
               </label>
-              <div className="flex space-x-2">
-                <div className="relative flex-1">
-                  <MapPin className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                  <input
-                    type="text"
-                    name="location"
-                    value={formData.location}
-                    onChange={handleInputChange}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-green focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    placeholder="Enter address or coordinates"
-                    required
-                  />
-                </div>
+              <div className="mb-2">
                 <button
                   type="button"
                   onClick={getCurrentLocation}
-                  className="px-4 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                  title="Auto-detect location"
+                  className="px-4 py-2 bg-primary-green text-white rounded-lg hover:bg-green-700 transition-colors"
                 >
-                  <MapPin className="h-5 w-5" />
+                  Use My Current Location
                 </button>
               </div>
+              <MapPicker
+                value={formData.coordinates}
+                onChange={(coords) => setFormData({ ...formData, coordinates: coords })}
+                center={formData.coordinates.lat !== 0 && formData.coordinates.lng !== 0 ? formData.coordinates : undefined}
+              />
+              <p className="text-xs text-gray-500 mt-2">
+                Drag the marker or click on the map to set the masjid location. You can also use your current location.
+              </p>
             </div>
 
             {/* Mobile Number */}
@@ -279,38 +260,6 @@ const RegisterMasjidPage: React.FC = () => {
                   placeholder="Create a password"
                   required
                 />
-              </div>
-            </div>
-
-            {/* Photo Upload */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Upload Masjid Photo (Optional)
-              </label>
-              <div className="flex items-center space-x-4">
-                <div className="flex-1">
-                  <label className="flex items-center justify-center w-full px-4 py-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:border-primary-green transition-colors">
-                    <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-300">
-                      <Upload className="h-5 w-5" />
-                      <span>{photo ? photo.name : 'Choose photo'}</span>
-                    </div>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handlePhotoChange}
-                      className="hidden"
-                    />
-                  </label>
-                </div>
-                {photoPreview && (
-                  <div className="w-16 h-16 rounded-lg overflow-hidden border border-gray-300 dark:border-gray-600">
-                    <img
-                      src={photoPreview}
-                      alt="Preview"
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                )}
               </div>
             </div>
 
