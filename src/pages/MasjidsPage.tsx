@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../store/store';
-import { getCurrentLocation, calculateDistance } from '../services/locationService';
+import { getCurrentLocation, calculateDistance, getDrivingDistance } from '../services/locationService';
 import { setMasjids, setLoading, setError } from '../store/slices/masjidSlice';
 import { setUserLocation } from '../store/slices/prayerSlice';
 import { Masjid } from '../types';
@@ -31,16 +31,22 @@ const MasjidsPage: React.FC = () => {
       // Fetch masjids from Firestore
       const querySnapshot = await getDocs(collection(db, 'masjids'));
       const masjidsFromDb = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      // Calculate distances and sort by proximity
-      const masjidsWithDistance = masjidsFromDb.map((masjid: any) => ({
-        ...masjid,
-        distance: masjid.coordinates ? calculateDistance(
-          location.lat,
-          location.lng,
-          masjid.coordinates.lat,
-          masjid.coordinates.lng
-        ) : null
-      })).sort((a, b) => (a.distance || Infinity) - (b.distance || Infinity));
+      // Calculate driving distances and sort by proximity
+      const masjidsWithDistance = await Promise.all(
+        masjidsFromDb.map(async (masjid: any) => {
+          let distance = null;
+          if (masjid.coordinates) {
+            distance = await getDrivingDistance(
+              location.lat,
+              location.lng,
+              masjid.coordinates.lat,
+              masjid.coordinates.lng
+            );
+          }
+          return { ...masjid, distance };
+        })
+      );
+      masjidsWithDistance.sort((a, b) => (a.distance || Infinity) - (b.distance || Infinity));
       dispatch(setMasjids(masjidsWithDistance));
       toast.success('Nearby masjids found!');
     } catch (err: any) {
