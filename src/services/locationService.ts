@@ -67,22 +67,33 @@ export async function getDrivingDistance(
   }
 }
 
-export async function reverseGeocode(lat: number, lon: number): Promise<string | null> {
+export async function reverseGeocode(lat: number, lon: number): Promise<{ area: string, city: string }> {
   const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`;
   try {
     const res = await fetch(url);
     const data = await res.json();
     if (data && data.address) {
-      // Filter out unwanted area names like 'Ward'
-      let area = data.address.suburb || data.address.neighbourhood || '';
-      if (area && area.toLowerCase().startsWith('ward')) {
-        area = '';
-      }
-      const city = data.address.city || data.address.town || data.address.village || '';
-      return [area, city].filter(Boolean).join(', ');
+      // Try to get the most specific area name available
+      const area =
+        data.address.suburb ||
+        data.address.neighbourhood ||
+        data.address.quarter ||
+        data.address.hamlet ||
+        data.address.village ||
+        data.address.town ||
+        data.address.county ||
+        '';
+      const city =
+        data.address.city ||
+        data.address.town ||
+        data.address.village ||
+        data.address.state_district ||
+        data.address.state ||
+        '';
+      return { area, city };
     }
-    return null;
+    return { area: '', city: '' };
   } catch {
-    return null;
+    return { area: '', city: '' };
   }
 }

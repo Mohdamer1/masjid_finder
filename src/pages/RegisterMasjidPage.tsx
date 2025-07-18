@@ -7,7 +7,7 @@ import { auth, db, storage } from '../firebase/config';
 import { MapPin, Phone, Mail, Lock, Upload, Camera, ArrowRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 import 'leaflet/dist/leaflet.css';
-import MapPicker from '../components/Common/MapPicker';
+import { reverseGeocode } from '../services/locationService';
 
 const RegisterMasjidPage: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -20,6 +20,8 @@ const RegisterMasjidPage: React.FC = () => {
   });
   const [loading, setLoading] = useState(false);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [detectedArea, setDetectedArea] = useState('');
+  const [detectedCity, setDetectedCity] = useState('');
   
   const navigate = useNavigate();
 
@@ -33,7 +35,7 @@ const RegisterMasjidPage: React.FC = () => {
   const getCurrentLocation = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
+        async (position) => {
           setFormData({
             ...formData,
             coordinates: {
@@ -43,6 +45,10 @@ const RegisterMasjidPage: React.FC = () => {
             location: `${position.coords.latitude.toFixed(6)}, ${position.coords.longitude.toFixed(6)}`
           });
           toast.success('Location detected successfully');
+          // Convert lat/lng to area/city
+          const { area, city } = await reverseGeocode(position.coords.latitude, position.coords.longitude);
+          setDetectedArea(area);
+          setDetectedCity(city);
         },
         (error) => {
           toast.error('Failed to get location. Please enter manually.');
@@ -195,15 +201,15 @@ const RegisterMasjidPage: React.FC = () => {
                 >
                   Use My Current Location
                 </button>
+                {formData.coordinates.lat !== 0 && formData.coordinates.lng !== 0 && (
+                  <div className="mt-2 text-sm text-gray-700 dark:text-gray-300">
+                    <div>Latitude: {formData.coordinates.lat.toFixed(6)}</div>
+                    <div>Longitude: {formData.coordinates.lng.toFixed(6)}</div>
+                    {detectedArea && <div>Area: {detectedArea}</div>}
+                    {detectedCity && <div>City: {detectedCity}</div>}
+                  </div>
+                )}
               </div>
-              <MapPicker
-                value={formData.coordinates}
-                onChange={(coords) => setFormData({ ...formData, coordinates: coords })}
-                center={formData.coordinates.lat !== 0 && formData.coordinates.lng !== 0 ? formData.coordinates : undefined}
-              />
-              <p className="text-xs text-gray-500 mt-2">
-                Drag the marker or click on the map to set the masjid location. You can also use your current location.
-              </p>
             </div>
 
             {/* Mobile Number */}
