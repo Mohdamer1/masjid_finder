@@ -132,29 +132,6 @@ const MasjidsPage: React.FC = () => {
             key={masjid.id}
             className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-xl transition-shadow duration-300"
           >
-            {/* Image */}
-            <div className="relative h-48 bg-gray-200 dark:bg-gray-700">
-              <img
-                src={masjid.image}
-                alt={masjid.name}
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = 'https://images.pexels.com/photos/3250364/pexels-photo-3250364.jpeg';
-                }}
-              />
-              {masjid.verified && (
-                <div className="absolute top-3 right-3 bg-primary-green text-white px-2 py-1 rounded-full text-xs font-medium flex items-center">
-                  <Star className="h-3 w-3 mr-1" />
-                  Verified
-                </div>
-              )}
-              {masjid.distance && (
-                <div className="absolute top-3 left-3 bg-black/70 text-white px-2 py-1 rounded-full text-xs font-medium">
-                  {masjid.distance} km away
-                </div>
-              )}
-            </div>
-
             {/* Content */}
             <div className="p-6">
               <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2 font-tajawal">
@@ -165,6 +142,14 @@ const MasjidsPage: React.FC = () => {
                 <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
                 <span className="text-sm">{masjid.address}</span>
               </div>
+
+              {/* Driving Distance */}
+              {masjid.distance !== null && masjid.distance !== undefined && (
+                <div className="mb-4 flex items-center text-primary-green font-semibold text-sm">
+                  <Navigation className="h-4 w-4 mr-1" />
+                  {masjid.distance} km by road
+                </div>
+              )}
 
               {/* Prayer Times */}
               {masjid.customTimings && (
