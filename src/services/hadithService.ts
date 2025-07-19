@@ -74,33 +74,10 @@ const fallbackHadiths: Hadith[] = [
 
 let currentHadithIndex = 0;
 export const getDailyHadith = async (): Promise<Hadith> => {
-  try {
-    // Try to fetch from API first
-    const randomHadithNumber = Math.floor(Math.random() * 50) + 1;
-    const response = await axios.get(`${HADITH_API_BASE}/collections/bukhari/hadiths/${randomHadithNumber}`, {
-      timeout: 5000 // 5 second timeout
-    });
-    
-    if (response.data && response.data.hadith) {
-      const hadithData = response.data.hadith;
-      return {
-        hadithNumber: hadithData.hadithNumber.toString(),
-        englishText: hadithData.text,
-        arabicText: hadithData.arab || '',
-        collection: 'Sahih Bukhari',
-        book: hadithData.book?.name || 'Book of Revelation',
-        narrator: hadithData.chain || 'Unknown'
-      };
-    } else {
-      throw new Error('Invalid API response');
-    }
-  } catch (error) {
-    // Fallback to rotating through our collection
-    console.warn('Hadith API unavailable, using fallback hadith');
-    const hadith = fallbackHadiths[currentHadithIndex];
-    currentHadithIndex = (currentHadithIndex + 1) % fallbackHadiths.length;
-    return hadith;
-  }
+  // Use fallback hadiths directly to avoid CORS issues
+  const hadith = fallbackHadiths[currentHadithIndex];
+  currentHadithIndex = (currentHadithIndex + 1) % fallbackHadiths.length;
+  return hadith;
 };
 
 export const getHadithByCollection = async (
