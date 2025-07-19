@@ -22,6 +22,7 @@ const RegisterMasjidPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [pendingApproval, setPendingApproval] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const [detectedArea, setDetectedArea] = useState('');
   const [detectedCity, setDetectedCity] = useState('');
   
@@ -115,14 +116,27 @@ const RegisterMasjidPage: React.FC = () => {
         isMasjidAdmin: true,
         isApproved: false,
         masjidId: userCredential.user.uid,
-        createdAt: new Date()
+        createdAt: new Date(),
+        password: formData.password
       });
 
       // Sign out the user and show pending approval message
       await signOut(auth);
       setPendingApproval(true);
       setShowSuccessDialog(false);
+      setShowModal(true);
       setLoading(false);
+      // Clear form fields
+      setFormData({
+        masjidName: '',
+        location: '',
+        coordinates: { lat: 0, lng: 0 },
+        mobileNumber: '',
+        email: '',
+        password: ''
+      });
+      setDetectedArea('');
+      setDetectedCity('');
       return;
     } catch (error: any) {
       console.error('Registration error:', error);
@@ -161,6 +175,23 @@ const RegisterMasjidPage: React.FC = () => {
 
   return (
     <div className="min-h-screen py-12 px-4 bg-gradient-to-br from-sky-50 to-green-50 dark:from-gray-900 dark:to-gray-800">
+      {/* Modal for pending approval */}
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-yellow-50 border-l-8 border-yellow-500 rounded-lg shadow-lg p-8 max-w-md w-full text-center animate-fade-in">
+            <p className="text-yellow-900 mb-6 font-medium">
+              Your masjid account has been created and is <b>pending admin approval</b>.<br/>
+              You will receive an email or notification once your account is approved and you can log in.
+            </p>
+            <button
+              className="px-6 py-2 bg-yellow-500 text-white rounded-lg font-semibold hover:bg-yellow-600 transition-colors"
+              onClick={() => setShowModal(false)}
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">

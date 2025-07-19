@@ -18,39 +18,6 @@ import MasjidDashboard from './pages/MasjidDashboard';
 
 function AppContent() {
   useEffect(() => {
-    // Disable right-click context menu
-    const handleContextMenu = (e: MouseEvent) => {
-      e.preventDefault();
-    };
-
-    // Disable text selection
-    const handleSelectStart = (e: Event) => {
-      e.preventDefault();
-    };
-
-    // Disable drag and drop
-    const handleDragStart = (e: DragEvent) => {
-      e.preventDefault();
-    };
-
-    // Disable F12, Ctrl+Shift+I, Ctrl+U (developer tools shortcuts)
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (
-        e.key === 'F12' ||
-        (e.ctrlKey && e.shiftKey && e.key === 'I') ||
-        (e.ctrlKey && e.key === 'u') ||
-        (e.ctrlKey && e.key === 'U')
-      ) {
-        e.preventDefault();
-      }
-    };
-
-    // Add event listeners
-    document.addEventListener('contextmenu', handleContextMenu);
-    document.addEventListener('selectstart', handleSelectStart);
-    document.addEventListener('dragstart', handleDragStart);
-    document.addEventListener('keydown', handleKeyDown);
-
     // Authentication listener
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
@@ -71,10 +38,6 @@ function AppContent() {
 
     // Cleanup function
     return () => {
-      document.removeEventListener('contextmenu', handleContextMenu);
-      document.removeEventListener('selectstart', handleSelectStart);
-      document.removeEventListener('dragstart', handleDragStart);
-      document.removeEventListener('keydown', handleKeyDown);
       unsubscribe();
     };
   }, []);

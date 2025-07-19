@@ -14,6 +14,24 @@ import { db } from '../firebase/config';
 // Extend Masjid type locally to include areaName
 type MasjidWithArea = Masjid & { areaName: string };
 
+// Helper to get today's prayer Date object from time string
+function getPrayerDate(time: string) {
+  const [hour, minute] = time.split(':');
+  const now = new Date();
+  const date = new Date(now.getFullYear(), now.getMonth(), now.getDate(), Number(hour), Number(minute), 0, 0);
+  return date;
+}
+
+// Helper to get countdown string
+function getCountdownString(target: Date) {
+  const now = new Date();
+  const diff = target.getTime() - now.getTime();
+  if (diff <= 0) return null;
+  const mins = Math.floor(diff / 60000);
+  const secs = Math.floor((diff % 60000) / 1000);
+  return `in ${mins}m ${secs < 10 ? '0' : ''}${secs}s`;
+}
+
 const MasjidsPage: React.FC = () => {
   const dispatch = useDispatch();
   const { masjids, loading, error } = useSelector((state: RootState) => state.masjid);
@@ -21,9 +39,16 @@ const MasjidsPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedFacilities, setSelectedFacilities] = useState<string[]>([]);
   const [locationError, setLocationError] = useState<string | null>(null);
+  // Add a state for current time to trigger re-render every second
+  const [now, setNow] = useState(new Date());
 
   useEffect(() => {
     fetchMasjids();
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(interval);
   }, []);
 
   const fetchMasjids = async () => {
@@ -43,27 +68,52 @@ const MasjidsPage: React.FC = () => {
       // Fetch masjids from Firestore
       const querySnapshot = await getDocs(collection(db, 'masjids'));
       const masjidsFromDb = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      // Calculate driving distances and get area/city for each masjid
-      const masjidsWithDistance: MasjidWithArea[] = await Promise.all(
-        masjidsFromDb.map(async (masjid: any) => {
-          let distance = null;
-          let areaName: string = '';
+      // Calculate straight-line distance for all masjids
+      const masjidsWithLineDistance = masjidsFromDb.map((masjid: any) => ({
+        ...masjid,
+        lineDistance: masjid.coordinates ? calculateDistance(
+          location.lat,
+          location.lng,
+          masjid.coordinates.lat,
+          masjid.coordinates.lng
+        ) : null,
+        distance: null // will be updated with driving distance
+      }));
+      // Sort by straight-line distance and take closest 10
+      const closestMasjids = masjidsWithLineDistance
+        .filter(m => m.lineDistance !== null)
+        .sort((a, b) => (a.lineDistance || Infinity) - (b.lineDistance || Infinity))
+        .slice(0, 10);
+      // For the closest 10, fetch driving distance in parallel
+      await Promise.all(
+        closestMasjids.map(async (masjid: any) => {
           if (masjid.coordinates) {
-            distance = await getDrivingDistance(
+            masjid.distance = await getDrivingDistance(
               location.lat,
               location.lng,
               masjid.coordinates.lat,
               masjid.coordinates.lng
             );
-            areaName = (await reverseGeocode(
-              masjid.coordinates.lat,
-              masjid.coordinates.lng
-            )) || '';
           }
-          return { ...masjid, distance, areaName };
         })
       );
-      masjidsWithDistance.sort((a, b) => (a.distance || Infinity) - (b.distance || Infinity));
+      // Merge driving distance back into the main list
+      const masjidsWithDistance = masjidsWithLineDistance.map(masjid => {
+        const found = closestMasjids.find(m => m.id === masjid.id);
+        return found ? { ...masjid, distance: found.distance } : masjid;
+      });
+      // Sort by driving distance if available, else by line distance
+      masjidsWithDistance.sort((a, b) => {
+        if (a.distance !== null && b.distance !== null) {
+          return a.distance - b.distance;
+        } else if (a.distance !== null) {
+          return -1;
+        } else if (b.distance !== null) {
+          return 1;
+        } else {
+          return (a.lineDistance || Infinity) - (b.lineDistance || Infinity);
+        }
+      });
       dispatch(setMasjids(masjidsWithDistance));
       toast.success('Nearby masjids found!');
     } catch (err: any) {
@@ -161,9 +211,20 @@ const MasjidsPage: React.FC = () => {
           >
             {/* Content */}
             <div className="p-6">
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2 font-tajawal">
-                {masjid.name}
-              </h3>
+              {/* Masjid Name and Verified Label */}
+              <div className="flex items-center mb-2">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white font-tajawal">
+                  {masjid.name}
+                </h3>
+                {masjid.verified && (
+                  <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded bg-green-100 text-green-800 text-xs font-semibold">
+                    <svg className="w-4 h-4 mr-1 text-green-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                    Verified
+                  </span>
+                )}
+              </div>
               
               <div className="flex items-start space-x-2 text-gray-600 dark:text-gray-300 mb-4">
                 <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
@@ -171,12 +232,17 @@ const MasjidsPage: React.FC = () => {
               </div>
 
               {/* Driving Distance */}
-              {masjid.distance !== null && masjid.distance !== undefined && (
+              {masjid.distance !== null && masjid.distance !== undefined ? (
                 <div className="mb-4 flex items-center text-primary-green font-semibold text-sm">
                   <Navigation className="h-4 w-4 mr-1" />
                   {masjid.distance} km by road
                 </div>
-              )}
+              ) : masjid.lineDistance !== null && masjid.lineDistance !== undefined ? (
+                <div className="mb-4 flex items-center text-primary-green font-semibold text-sm">
+                  <Navigation className="h-4 w-4 mr-1" />
+                  {masjid.lineDistance} km straight line
+                </div>
+              ) : null}
 
               {/* Prayer Times */}
               {masjid.customTimings && (
