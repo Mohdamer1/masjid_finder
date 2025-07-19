@@ -8,6 +8,7 @@ import { MapPin, Phone, Mail, Lock, Upload, Camera, ArrowRight } from 'lucide-re
 import toast from 'react-hot-toast';
 import 'leaflet/dist/leaflet.css';
 import { reverseGeocode } from '../services/locationService';
+import { signOut } from 'firebase/auth';
 
 const RegisterMasjidPage: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -20,6 +21,7 @@ const RegisterMasjidPage: React.FC = () => {
   });
   const [loading, setLoading] = useState(false);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [pendingApproval, setPendingApproval] = useState(false);
   const [detectedArea, setDetectedArea] = useState('');
   const [detectedCity, setDetectedCity] = useState('');
   
@@ -116,7 +118,12 @@ const RegisterMasjidPage: React.FC = () => {
         createdAt: new Date()
       });
 
-      setShowSuccessDialog(true);
+      // Sign out the user and show pending approval message
+      await signOut(auth);
+      setPendingApproval(true);
+      setShowSuccessDialog(false);
+      setLoading(false);
+      return;
     } catch (error: any) {
       console.error('Registration error:', error);
       toast.error(error.message);
@@ -176,6 +183,11 @@ const RegisterMasjidPage: React.FC = () => {
 
         {/* Registration Form */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 border border-gray-200 dark:border-gray-700">
+          {pendingApproval && (
+            <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6 rounded">
+              <p className="font-semibold">Your masjid account has been created and is pending approval by an admin. You will be able to log in once your account is approved.</p>
+            </div>
+          )}
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Masjid Name */}
             <div>

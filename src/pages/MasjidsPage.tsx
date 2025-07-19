@@ -81,7 +81,7 @@ const MasjidsPage: React.FC = () => {
                                masjid.facilities.includes(facility)
                              );
     
-    return matchesSearch && matchesFacilities;
+    return matchesSearch && matchesFacilities && masjid.isApproved === true;
   });
 
   const allFacilities = [...new Set(masjids.flatMap(m => m.facilities))];
@@ -187,29 +187,29 @@ const MasjidsPage: React.FC = () => {
                   </p>
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <div className="flex justify-between">
-                      <span>Fajr:</span>
-                      <span className="font-mono">{masjid.customTimings.fajr}</span>
+                      <span className="text-gray-700 dark:text-white">Fajr:</span>
+                      <span className="font-mono text-gray-900 dark:text-white">{masjid.customTimings.fajr}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>Dhuhr:</span>
-                      <span className="font-mono">{masjid.customTimings.dhuhr}</span>
+                      <span className="text-gray-700 dark:text-white">Dhuhr:</span>
+                      <span className="font-mono text-gray-900 dark:text-white">{masjid.customTimings.dhuhr}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>Asr:</span>
-                      <span className="font-mono">{masjid.customTimings.asr}</span>
+                      <span className="text-gray-700 dark:text-white">Asr:</span>
+                      <span className="font-mono text-gray-900 dark:text-white">{masjid.customTimings.asr}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>Maghrib:</span>
-                      <span className="font-mono">{masjid.customTimings.maghrib}</span>
+                      <span className="text-gray-700 dark:text-white">Maghrib:</span>
+                      <span className="font-mono text-gray-900 dark:text-white">{masjid.customTimings.maghrib}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>Isha:</span>
-                      <span className="font-mono">{masjid.customTimings.isha}</span>
+                      <span className="text-gray-700 dark:text-white">Isha:</span>
+                      <span className="font-mono text-gray-900 dark:text-white">{masjid.customTimings.isha}</span>
                     </div>
                     {masjid.customTimings.jummah && (
                       <div className="flex justify-between">
-                        <span>Jummah:</span>
-                        <span className="font-mono">{masjid.customTimings.jummah}</span>
+                        <span className="text-gray-700 dark:text-white">Jummah:</span>
+                        <span className="font-mono text-gray-900 dark:text-white">{masjid.customTimings.jummah}</span>
                       </div>
                     )}
                   </div>

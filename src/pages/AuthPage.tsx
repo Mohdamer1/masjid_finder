@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -13,6 +13,7 @@ const AuthPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [pendingApproval, setPendingApproval] = useState(false);
   
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -32,6 +33,7 @@ const AuthPage: React.FC = () => {
       // Check if user is approved (for masjid admins)
       if (userData?.isMasjidAdmin && !userData?.isApproved) {
         await signOut(auth);
+        setPendingApproval(true);
         toast.error('Your account is pending approval. Please wait for verification.');
         setLoading(false);
         return;
@@ -62,6 +64,11 @@ const AuthPage: React.FC = () => {
   return (
     <div className="min-h-screen flex items-center justify-center py-12 px-4 bg-gradient-to-br from-sky-50 to-green-50 dark:from-gray-900 dark:to-gray-800">
       <div className="max-w-md w-full">
+        {pendingApproval && (
+          <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6 rounded">
+            <p className="font-semibold">Your masjid account is pending approval by an admin. You will be able to log in once your account is approved.</p>
+          </div>
+        )}
         {/* Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-green text-white rounded-2xl mb-4 islamic-pattern">
