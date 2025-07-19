@@ -11,6 +11,17 @@
   body {
     font-family: 'Tajawal', sans-serif;
     line-height: 1.6;
+    /* Disable text selection */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    /* Disable image dragging */
+    -webkit-user-drag: none;
+    -khtml-user-drag: none;
+    -moz-user-drag: none;
+    -o-user-drag: none;
+    user-drag: none;
   }
   
   .font-arabic {
@@ -120,6 +131,22 @@
   ::selection {
     background: #28A745;
     color: white;
+  }
+  
+  /* Allow text selection for specific elements */
+  .allow-select {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+  }
+  
+  /* Disable text selection for all elements by default */
+  * {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
   }
   
   /* Focus styles */
