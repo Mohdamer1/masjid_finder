@@ -49,7 +49,7 @@ const HomePage: React.FC = () => {
   ];
 
   return (
-    <div>
+    <div className="min-h-screen flex flex-col">
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-primary-green to-green-700 text-white py-20 px-4 overflow-hidden">
         {/* Islamic Pattern Background */}

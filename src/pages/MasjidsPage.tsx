@@ -5,7 +5,7 @@ import { getCurrentLocation, calculateDistance, getDrivingDistance, reverseGeoco
 import { setMasjids, setLoading, setError } from '../store/slices/masjidSlice';
 import { setUserLocation } from '../store/slices/prayerSlice';
 import { Masjid } from '../types';
-import LoadingSpinner from '../components/Common/LoadingSpinner';
+import IslamicSpinner from '../components/Common/IslamicSpinner';
 import { MapPin, Phone, Star, Navigation, Clock, Users } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { collection, getDocs } from 'firebase/firestore';
@@ -143,10 +143,10 @@ const MasjidsPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto py-12 px-4">
-        <div className="flex items-center justify-center py-24">
-          <LoadingSpinner size="lg" />
-          <span className="ml-3 text-gray-600 dark:text-gray-300">Finding nearby masjids...</span>
+      <div className="min-h-screen flex flex-col justify-center items-center bg-gradient-to-br from-sky-50 to-green-50 dark:from-gray-900 dark:to-gray-800">
+        <div className="flex flex-col items-center justify-center">
+          <IslamicSpinner size={64} />
+          <span className="mt-4 text-gray-600 dark:text-gray-300">Finding nearby masjids...</span>
         </div>
       </div>
     );
@@ -154,8 +154,8 @@ const MasjidsPage: React.FC = () => {
 
   if (locationError) {
     return (
-      <div className="max-w-7xl mx-auto py-12 px-4">
-        <div className="flex items-center justify-center py-24">
+      <div className="min-h-screen flex flex-col justify-center items-center bg-gradient-to-br from-sky-50 to-green-50 dark:from-gray-900 dark:to-gray-800">
+        <div className="flex flex-col items-center justify-center">
           <span className="text-red-600 text-lg font-semibold">{locationError}</span>
         </div>
       </div>
@@ -163,7 +163,7 @@ const MasjidsPage: React.FC = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto py-12 px-4">
+    <div className="min-h-screen max-w-7xl mx-auto py-12 px-4 flex flex-col">
       {/* Header */}
       <div className="text-center mb-12">
         <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4 font-tajawal">

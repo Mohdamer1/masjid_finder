@@ -174,7 +174,7 @@ const RegisterMasjidPage: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen py-12 px-4 bg-gradient-to-br from-sky-50 to-green-50 dark:from-gray-900 dark:to-gray-800">
+    <div className="min-h-screen flex flex-col py-12 px-4 bg-gradient-to-br from-sky-50 to-green-50 dark:from-gray-900 dark:to-gray-800">
       {/* Modal for pending approval */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">

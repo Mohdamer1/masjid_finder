@@ -36,9 +36,16 @@ function AppContent() {
       }
     });
 
+    // Disable the default context menu globally
+    const handleContextMenu = (e: MouseEvent) => {
+      e.preventDefault();
+    };
+    window.addEventListener('contextmenu', handleContextMenu);
+
     // Cleanup function
     return () => {
       unsubscribe();
+      window.removeEventListener('contextmenu', handleContextMenu);
     };
   }, []);
 
